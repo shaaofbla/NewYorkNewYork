@@ -23,6 +23,7 @@ class OscCommunication{
         static int Ip2;
         static int Ip3;
         static int Ip4;
+        
 
     OscCommunication(){
         outPort = 4901;
@@ -51,7 +52,6 @@ class OscCommunication{
             if (!msg.hasError()){
                 msg.dispatch("/start", start);
                 msg.dispatch("/stop", stop);
-                msg.dispatch("/setIP", setIpAddress);
             }
         }
     }
@@ -63,6 +63,7 @@ class OscCommunication{
     static void start(OSCMessage &msg){
         gameState = true;
     }
+
 
     static void setIpAddress(OSCMessage &msg){
         Ip1 = msg.getInt(0);

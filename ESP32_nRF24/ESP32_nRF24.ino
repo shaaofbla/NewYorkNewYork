@@ -6,7 +6,7 @@
 #include "OSCCommunication.h"
 
 RF24 radio(4, 5); // CE, CSN
-const byte address[6] = "Car10";
+const byte address[6] = "Car30";
 
 OscCommunication Osc;
 
@@ -19,6 +19,7 @@ struct JoyStickData {
 
 void setup() {
   Serial.begin(115200);
+  delay(1000);
   Serial.println("Serial begin!");
 
   Osc.init();
@@ -44,7 +45,6 @@ void loop() {
   if (Osc.gameState) {
     joyStick_data.x = adc1_get_raw(ADC1_CHANNEL_6);
     joyStick_data.y = adc1_get_raw(ADC1_CHANNEL_7);
-    joyStick_data.msg = "hello";
 
     bool report = radio.write(&joyStick_data, sizeof(joyStick_data));
 
@@ -57,6 +57,23 @@ void loop() {
 
     Serial.println();
     Serial.printf("x: %d y: %d\n", joyStick_data.x, joyStick_data.y);
+
+    delay(100);
+  } else {
+    joyStick_data.x = (uint16_t) 255;
+    joyStick_data.y = (uint16_t) 255;
+
+    bool report = radio.write(&joyStick_data, sizeof(joyStick_data));
+
+    if (report) {
+      Serial.print(F("Transmission successful!"));
+
+    } else {
+      Serial.print(F("Transmission failed!"));
+    }
+
+    Serial.println();
+    Serial.println("Car off.");
 
     delay(100);
   }
