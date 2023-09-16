@@ -23,7 +23,7 @@ RF24 radio(CE_PIN, CSN_PIN); //CE, CSN
 
 
 
-int car = 1;//BLAU : 0, GRÜN 1, ROT 2, VIOLETT: 3};
+int car = 0;//BLAU : 0, GRÜN 1, ROT 2, VIOLETT: 3};
 const byte address[][6] = {"Car10", "Car20", "Car30", "Car40"};
 
 
@@ -137,6 +137,7 @@ void loop(){
     }
     
   } else {
-
+        motor3.run(0);
+        motor4.run(0);
   }
 }

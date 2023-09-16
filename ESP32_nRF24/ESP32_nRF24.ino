@@ -58,6 +58,8 @@ void sendJoyStickData(){
   Serial.print("Sending data.");
   Serial.print("\t");
   Serial.println(joyStick_data.x);
+  Serial.print("\t");
+  Serial.println(joyStick_data.y);
   bool report = radio.write(&joyStick_data, sizeof(joyStick_data)); 
   if (report) {
     Serial.print(F("Transmission successful!"));
