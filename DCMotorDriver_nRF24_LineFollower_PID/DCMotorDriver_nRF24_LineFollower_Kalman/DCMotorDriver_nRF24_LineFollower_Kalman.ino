@@ -29,6 +29,9 @@ const byte address[][6] = {"Car10", "Car20", "Car30", "Car40"};
 
 int motorSpeed = 255;
 
+float lastX = 0;
+float lastY = 0;
+
 //Simple Klaman Filter
 float e_mean = 4; //fast: 2,2,1   intermediat: 3,2,1; slow; 4,2,1
 float e_est = 2;
@@ -82,7 +85,15 @@ void setup(){
 boolean vehicleInBlackField(){
   int S1 = digitalRead(LineFollower1_PIN);
   int S2  = digitalRead(LineFollower2_PIN);
-  return !((S1 == 1) || (S2 == 1));
+  /*
+  Serial.print(S1);
+  Serial.print("\t");
+  Serial.print(S2);
+  Serial.print("\t");
+  Serial.print(!S1 || !S2);
+  Serial.print("\n");
+  */
+  return !S1 && !S2 ;
 }
 
 float mapCoordinate(int coord){
@@ -106,34 +117,51 @@ float rotateY(float x, float y, float angle){
 
 void loop(){
   boolean BallonGanz = digitalRead(GameOver_PIN);
-  
+  vehicleInBlackField();
   if(BallonGanz){
   
     if (radio.available()){
-      motorSpeed = 255;
-      radio.read(&joyStickData, sizeof(joyStickData));
-      float x = kf_x.updateEstimate(joyStickData.x);
-      float y = kf_y.updateEstimate(joyStickData.y);
+      if (vehicleInBlackField()){
+        Serial.println("Black");
 
-      float x_est = mapCoordinate(x);
-      float y_est = mapCoordinate(y);
-      float x_rot = rotateX(x_est, y_est, PI/4);
-      float y_rot = rotateY(x_est, y_est, PI/4);
-
-
-      float cutoff = 0.2;
-      
-      if (x_rot >= cutoff || y_rot >= cutoff || x_rot < -cutoff || y_rot < -cutoff){
-        float freq = 440*pow(2, (-y_rot*12+24*x_rot)/12);
-        Serial.println(freq);
-        buzzer.tone(freq, 50);
-        motor3.run(x_rot * motorSpeed);
-        motor4.run(y_rot * motorSpeed);
+        motorSpeed = 255;
+        radio.read(&joyStickData, sizeof(joyStickData));
+        float x = kf_x.updateEstimate(joyStickData.x);
+        float y = kf_y.updateEstimate(joyStickData.y);
+  
+        float x_est = mapCoordinate(x);
+        float y_est = mapCoordinate(y);
+        float x_rot = rotateX(x_est, y_est, PI/4);
+        float y_rot = rotateY(x_est, y_est, PI/4);
+  
+  
+        float cutoff = 0.2;
+        
+        if (x_rot >= cutoff || y_rot >= cutoff || x_rot < -cutoff || y_rot < -cutoff){
+          float freq = 440*pow(2, (-y_rot*12+24*x_rot)/12);
+          Serial.println(freq);
+          buzzer.tone(freq, 50);
+          motor3.run(x_rot * motorSpeed);
+          motor4.run(y_rot * motorSpeed);
+          lastX = x_rot;
+          lastY = y_rot;
+        } else {
+          motor3.run(0);
+          motor4.run(0);
+        }
       } else {
+        Serial.println("White\t");
+        Serial.print(lastX);
+        Serial.print("\t");
+        Serial.println(lastY);
+        motor3.run(-lastX * motorSpeed);
+        motor4.run(-lastY * motorSpeed);
+        delay(1000);
         motor3.run(0);
         motor4.run(0);
+        delay(500);
+        
       }
-
     }
     
   } else {

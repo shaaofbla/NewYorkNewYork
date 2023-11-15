@@ -34,7 +34,8 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("Serial begin!");
-
+  
+  
   Osc.init();
   Serial.println("Osc ok! ");
 

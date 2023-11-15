@@ -19,7 +19,7 @@ MeDCMotor motor4(M2);
 
 RF24 radio(CE_PIN, CSN_PIN); //CE, CSN
 
-const byte address[6] = "Car20";
+const byte address[6] = "Car10";
 
 
 int lastX = 0;
@@ -76,6 +76,11 @@ void setup(){
 boolean vehicleInBlackField(){
   int S1 = digitalRead(LineFollower1_PIN);
   int S2  = digitalRead(LineFollower2_PIN);
+  //Serial.print("Sensor: ");
+  //Serial.print(S1);
+  //Serial.print("\t");
+  //Serial.print(S2);
+  //Serial.print("\n");
   return !((S1 == 1) || (S2 == 1));
 }
 
@@ -102,51 +107,56 @@ void loop(){
   boolean BallonGanz = digitalRead(GameOver_PIN);
   
   if(BallonGanz){
-  if(vehicleInBlackField()){
+    if(vehicleInBlackField()){
     
-    if (radio.available()){
-      motorSpeed = 255;
-      radio.read(&joyStickData, sizeof(joyStickData));
-      float x = kf_x.updateEstimate(joyStickData.x);
-      float y = kf_y.updateEstimate(joyStickData.b);
-
-      float x_est = mapCoordinate(x);
-      float y_est = mapCoordinate(y);
-      float x_rot = rotateX(x_est, y_est, PI/4);
-      float y_rot = rotateY(x_est, y_est, PI/4);
-      //float x_rot = rotateX(x, y, PI/4);
-      //float y_rot = rotateY(x, y, PI/4);
-      //Serial.print(joyStickData.x);
-      //Serial.print("\t");
-      Serial.print(x);
-      Serial.print("\t");
-      Serial.print(y);
-      Serial.print("\t");
-      Serial.println();
-      motor3.run(x_rot * motorSpeed);
-      motor4.run(y_rot * motorSpeed);
-      lastX = x;
-      lastY = y;
-    }
+      if (radio.available()){
+        Serial.println("Black");
+        motorSpeed = 255;
+        radio.read(&joyStickData, sizeof(joyStickData));
+        float x = kf_x.updateEstimate(joyStickData.x);
+        float y = kf_y.updateEstimate(joyStickData.y);
+  
+        float x_est = mapCoordinate(x);
+        float y_est = mapCoordinate(y);
+        float x_rot = rotateX(x_est, y_est, PI/4);
+        float y_rot = rotateY(x_est, y_est, PI/4);
+        //float x_rot = rotateX(x, y, PI/4);
+        //float y_rot = rotateY(x, y, PI/4);
+        //Serial.print(joyStickData.x);
+        //Serial.print("\t");
+        Serial.print(x_rot);
+        Serial.print("\t");
+        Serial.print(y_rot);
+        Serial.print("\t");
+        Serial.println();
+        motor3.run(x_rot * motorSpeed);
+        motor4.run(y_rot * motorSpeed);
+        lastX = x;
+        lastY = y;
+      } else {
+        //Serial.println("No Signal received, check Address.");
+      }
     
-  } else {
-    if (radio.available()){
-      motorSpeed = 255;
-      radio.read(&joyStickData, sizeof(joyStickData));
-      float x = mapCoordinate(joyStickData.x);
-      float y = mapCoordinate(joyStickData.b);
-      float x_est = kf_x.updateEstimate(x);
-      float y_est = kf_y.updateEstimate(y);
-      float x_rot = rotateX(x_est, y_est, PI/4);
-      float y_rot = rotateY(x_est, y_est, PI/4);
-      motor3.run(x_rot * motorSpeed);
-      motor4.run(y_rot * motorSpeed);
-      lastX = x;
-      lastY = y;
+    } else {
+      if (radio.available()){
+        Serial.println("White");
+        motorSpeed = 255;
+        radio.read(&joyStickData, sizeof(joyStickData));
+        float x = mapCoordinate(joyStickData.x);
+        float y = mapCoordinate(joyStickData.b);
+        float x_est = kf_x.updateEstimate(x);
+        float y_est = kf_y.updateEstimate(y);
+        float x_rot = rotateX(x_est, y_est, PI/4);
+        float y_rot = rotateY(x_est, y_est, PI/4);
+        motor3.run(x_rot * motorSpeed);
+        motor4.run(y_rot * motorSpeed);
+        lastX = x;
+        lastY = y;
     }
     
   }
   } else {
+    Serial.println("Ballon geplatzt, GAME OVER");
     motor3.run(0);
     motor4.run(0);
   }

@@ -30,16 +30,18 @@ class OscCommunication{
         localPort = 4900;
     }
 
-    void init(){
+    bool init(){
         WiFi.begin(ssid, pass); // Use the correct SSID and password
         while (WiFi.status() != WL_CONNECTED){
             delay(500);
+            return false;
         }
         Serial.println("Command Online. IP Address is: ");
         Serial.println(WiFi.localIP());
         Serial.println();
 
         Udp.begin(localPort);
+        return true
     }
 
     void Update(){
